@@ -22,28 +22,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tel_input = clean_input($_POST['telephone']);
         $password  = $_POST['password'];
 
-        // Normalize input — strip all non-digits, build both formats
-        $digits_only    = preg_replace('/\D/', '', $tel_input);
-        $telephone_full  = '+237' . $digits_only;   // stored format: +237XXXXXXXXX
-        $telephone_short = $digits_only;             // legacy fallback
+        $digits_only     = preg_replace('/\D/', '', $tel_input);
+        $telephone_full  = !empty($digits_only) ? '+237' . $digits_only : '';
+        $telephone_short = $digits_only;
 
         if (empty($tel_input) || empty($password)) {
-            set_flash_message('danger', 'Veuillez saisir votre numéro de téléphone et votre mot de passe.');
+            set_flash_message('danger', 'Veuillez saisir votre numéro de téléphone (ou email) et votre mot de passe.');
         } else {
-            // Search by: full phone, short phone (legacy), or email (admin fallback)
+            // Search by: full phone (+237), short phone, raw input (phone or email)
             $stmt = $db->prepare("
                 SELECT * FROM users 
-                WHERE telephone = ?
-                   OR telephone = ?
-                   OR email     = ?
-                   OR email     = ?
+                WHERE telephone = :full
+                   OR telephone = :short
+                   OR telephone = :raw
+                   OR email     = :raw
                 LIMIT 1
             ");
             $stmt->execute([
-                $telephone_full,
-                $telephone_short,
-                $telephone_full,
-                $telephone_short,
+                'full'  => $telephone_full,
+                'short' => $telephone_short,
+                'raw'   => $tel_input,
             ]);
             $user = $stmt->fetch();
 
