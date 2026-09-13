@@ -10,11 +10,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Database Credentials (XAMPP default)
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'invest_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// Database Credentials (Auto-detect Localhost vs InfinityFree Production)
+$is_local = isset($_SERVER['HTTP_HOST']) && ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
+define('DB_HOST', $is_local ? 'localhost' : 'sql312.infinityfree.com');
+define('DB_NAME', $is_local ? 'invest_db' : 'if0_41582591_invest_db');
+define('DB_USER', $is_local ? 'root' : 'if0_41582591');
+define('DB_PASS', $is_local ? '' : 'Xir8cvZrzKXWJ');
 
 // Generate a CSRF token if one does not exist
 if (empty($_SESSION['csrf_token'])) {
