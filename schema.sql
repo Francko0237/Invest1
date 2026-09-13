@@ -94,7 +94,7 @@ INSERT INTO `plans` (`id`, `nom`, `prix`, `pourcentage`, `duree_valeur`, `duree_
 (5, 'Diamant Royal', 10000.00, 150.00, 3, 'mois', 1, 'DIAMANT', 'Plan élite — 150% de gain en 3 mois', 'assets/images/bijou_royal.png')
 ON DUPLICATE KEY UPDATE `nom` = VALUES(`nom`), `prix` = VALUES(`prix`), `pourcentage` = VALUES(`pourcentage`), `duree_valeur` = VALUES(`duree_valeur`), `duree_type` = VALUES(`duree_type`), `statut` = VALUES(`statut`), `niveau` = VALUES(`niveau`), `description` = VALUES(`description`), `image` = VALUES(`image`);
 
--- Default Admin User (Email: admin@invest.com / Pass: admin123)
+-- Default Admin User (Phone: 666666666 / Email: admin@invest.com / Pass: admin123)
 INSERT INTO `users` (`id`, `nom`, `telephone`, `email`, `password`, `solde`, `code_parrain`, `role`) VALUES
-(1, 'Administrateur', '00000000', 'admin@invest.com', '$2y$10$v./qlNOqkJoTCmkmohx.POvgLDep2J2vMuplOf5voV7HmaVQyalaO', 0.00, 'ADMIN001', 'admin')
-ON DUPLICATE KEY UPDATE `password` = VALUES(`password`), `role` = VALUES(`role`);
+(1, 'Administrateur', '+237666666666', 'admin@invest.com', '$2y$10$bv8Gw58Io/QydIGVSl6mnuNE9F8nMP5WnmB43iLXqiDW7LWE41Rzy', 0.00, 'ADMIN001', 'admin')
+ON DUPLICATE KEY UPDATE `telephone` = VALUES(`telephone`), `password` = VALUES(`password`), `role` = VALUES(`role`);
