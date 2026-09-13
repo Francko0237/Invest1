@@ -96,5 +96,5 @@ ON DUPLICATE KEY UPDATE `nom` = VALUES(`nom`), `prix` = VALUES(`prix`), `pourcen
 
 -- Default Admin User (Email: admin@invest.com / Pass: admin123)
 INSERT INTO `users` (`id`, `nom`, `telephone`, `email`, `password`, `solde`, `code_parrain`, `role`) VALUES
-(1, 'Administrateur', '00000000', 'admin@invest.com', '$2y$10$wKz0b3U1uBq0J.y1v1Y8u.z.N0J.N0J.N0J.N0J.N0J.N0J.N0J.', 0.00, 'ADMIN001', 'admin')
-ON DUPLICATE KEY UPDATE `nom` = VALUES(`nom`);
+(1, 'Administrateur', '00000000', 'admin@invest.com', '$2y$10$v./qlNOqkJoTCmkmohx.POvgLDep2J2vMuplOf5voV7HmaVQyalaO', 0.00, 'ADMIN001', 'admin')
+ON DUPLICATE KEY UPDATE `password` = VALUES(`password`), `role` = VALUES(`role`);
