@@ -168,6 +168,11 @@ body.theme-light .auth-card {
     padding: 0;
 }
 
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     background-color: var(--bg-dark);
     background-image: 
@@ -1292,13 +1297,18 @@ tr:hover td {
         bottom: 0;
         left: 0;
         right: 0;
+        width: 100vw;
+        max-width: 100%;
         height: 65px;
-        background: rgba(10, 11, 14, 0.92);
+        background: rgba(10, 11, 14, 0.95);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         border-top: 1px solid var(--border-color);
-        z-index: 1000;
+        z-index: 9999;
         padding: 5px 0;
+        box-sizing: border-box;
+        margin: 0;
+        padding-bottom: max(5px, env(safe-area-inset-bottom));
     }
 
     .tab-btn {
@@ -1312,8 +1322,12 @@ tr:hover td {
         gap: 3px;
         cursor: pointer;
         transition: var(--transition);
-        flex-grow: 1;
+        flex: 1 1 0%;
+        min-width: 0;
+        max-width: 25%;
+        padding: 4px 2px;
         outline: none;
+        box-sizing: border-box;
     }
 
     .tab-icon {
@@ -1324,6 +1338,10 @@ tr:hover td {
         font-size: 0.7rem;
         font-weight: 600;
         letter-spacing: 0.02em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
     }
 
     .tab-btn.active {
@@ -1332,13 +1350,28 @@ tr:hover td {
     }
     
     .container {
-        padding: 1rem 1rem;
+        padding: 1rem 0.8rem;
+        max-width: 100vw;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
     
     .navbar {
-        padding: 1rem 1.2rem;
+        padding: 0.75rem 0.9rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        max-width: 100vw;
+        box-sizing: border-box;
+        overflow: hidden;
     }
     
+    .navbar .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
     .navbar .nav-links .nav-user-info {
         font-size: 0; /* Hide text nodes (Bonjour, ) */
     }
@@ -1348,8 +1381,14 @@ tr:hover td {
     }
     
     .navbar .nav-links .nav-user-info span {
-        font-size: 0.95rem; /* Re-show the balance! */
+        font-size: 0.85rem; /* Re-show the balance! */
         margin-left: 0 !important;
+    }
+
+    .navbar .nav-links .nav-btn-outline {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.75rem !important;
+        white-space: nowrap;
     }
 
     /* Admin Navbar Mobile Layout */

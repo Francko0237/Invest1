@@ -116,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         $db->commit();
-        set_flash_message('success', 'Votre demande de retrait de ' . format_money($amount) . ' a été soumise avec succès.');
+        set_flash_message('success', 'Demande de retrait de ' . format_money($amount) . ' enregistrée ! Votre solde a été immédiatement débité. L\'administrateur validera et effectuera le transfert vers votre numéro Mobile Money sous peu.');
         header('Location: dashboard.php#tab-compte');
         exit();
     } catch (Exception $e) {
@@ -140,7 +140,7 @@ $icon_clock   = '<svg class="svg-icon" viewBox="0 0 24 24" width="16" height="16
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demander un Retrait - BijouxInvest</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>

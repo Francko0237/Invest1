@@ -26,6 +26,10 @@ $withdraw_info = $stmtWithdrawalsCount->fetch();
 $pending_withdrawals_count = (int)$withdraw_info['COUNT(*)'];
 $pending_withdrawals_volume = (float)$withdraw_info['SUM(montant)'];
 
+// Total pending deposits
+$stmtDepositsCount = $db->query("SELECT COUNT(*) FROM deposits WHERE status = 'pending'");
+$pending_deposits_count = (int)$stmtDepositsCount->fetchColumn();
+
 // 3. Fetch recent investments
 $stmtRecentInv = $db->query("SELECT i.*, u.nom as user_nom, p.nom as plan_nom 
                              FROM investments i
@@ -44,7 +48,7 @@ $recent_users = $stmtRecentUsers->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Tableau de bord</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>
@@ -53,6 +57,7 @@ $recent_users = $stmtRecentUsers->fetchAll();
     <a href="dashboard.php" class="nav-brand">BijouxInvest - Admin</a>
     <div class="nav-links">
         <a href="dashboard.php" class="nav-link active">Dashboard</a>
+        <a href="deposits.php" class="nav-link">Dépôts <?php if ($pending_deposits_count > 0): ?><span class="badge badge-pending" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;"><?php echo $pending_deposits_count; ?></span><?php endif; ?></a>
         <a href="plans.php" class="nav-link">Gestion Plans</a>
         <a href="users.php" class="nav-link">Gestion Membres</a>
         <a href="withdrawals.php" class="nav-link">Retraits <?php if ($pending_withdrawals_count > 0): ?><span class="badge badge-pending" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;"><?php echo $pending_withdrawals_count; ?></span><?php endif; ?></a>

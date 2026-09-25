@@ -57,7 +57,7 @@ $page_title = 'Investissez intelligemment — BijouxInvest';
   <meta name="description" content="BijouxInvest — Plateforme d'investissement dans des bijoux d'exception avec gains automatiques et parrainage 3 niveaux.">
   <title><?php echo e($page_title); ?></title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2'><path d='M6 3h12l4 6-10 12L2 9z'/><path d='M11 3 8 9l3 12 3-12-3-6z'/><path d='M2 9h20'/></svg>">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/assets/css/style.css'); ?>">
   <style>
     /* ── Landing Nav & Theme Bar ── */
     .land-nav {
@@ -573,8 +573,14 @@ $page_title = 'Investissez intelligemment — BijouxInvest';
 
 <script>
 function toggleSiteTheme() {
-  var isLight = document.body.classList.toggle('theme-light');
-  try { localStorage.setItem('userThemeChoice', isLight ? 'light' : 'dark'); } catch(e) {}
+  var isLight = document.body.classList.contains('theme-light');
+  if (isLight) {
+    document.body.classList.remove('theme-light');
+    try { localStorage.setItem('siteTheme', 'dark'); } catch(e) {}
+  } else {
+    document.body.classList.add('theme-light');
+    try { localStorage.setItem('siteTheme', 'light'); } catch(e) {}
+  }
 }
 </script>
 <script src="assets/js/toast.js"></script>

@@ -190,6 +190,12 @@ if (isset($_GET['edit_id'])) {
 // Fetch all plans
 $stmtPlans = $db->query("SELECT * FROM plans ORDER BY prix ASC");
 $plans = $stmtPlans->fetchAll();
+// Count pending items for badges
+$stmtPendingDep = $db->query("SELECT COUNT(*) FROM deposits WHERE status = 'pending'");
+$pending_deposits_count = (int)$stmtPendingDep->fetchColumn();
+
+$stmtPendingWd = $db->query("SELECT COUNT(*) FROM withdrawals WHERE status = 'pending'");
+$pending_withdrawals_count = (int)$stmtPendingWd->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -197,7 +203,7 @@ $plans = $stmtPlans->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Gestion des Plans</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>
@@ -206,9 +212,10 @@ $plans = $stmtPlans->fetchAll();
     <a href="dashboard.php" class="nav-brand">BijouxInvest - Admin</a>
     <div class="nav-links">
         <a href="dashboard.php" class="nav-link">Dashboard</a>
+        <a href="deposits.php" class="nav-link">Dépôts <?php if ($pending_deposits_count > 0): ?><span class="badge badge-pending" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;"><?php echo $pending_deposits_count; ?></span><?php endif; ?></a>
         <a href="plans.php" class="nav-link active">Gestion Plans</a>
         <a href="users.php" class="nav-link">Gestion Membres</a>
-        <a href="withdrawals.php" class="nav-link">Retraits</a>
+        <a href="withdrawals.php" class="nav-link">Retraits <?php if ($pending_withdrawals_count > 0): ?><span class="badge badge-pending" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;"><?php echo $pending_withdrawals_count; ?></span><?php endif; ?></a>
         <a href="settings.php" class="nav-link">Configuration</a>
         <a href="../dashboard.php" class="nav-btn-outline">Espace Client</a>
         <a href="../logout.php" class="nav-btn-outline" style="border-color: var(--danger); color: var(--danger);">Déconnexion</a>

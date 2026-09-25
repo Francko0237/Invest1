@@ -79,6 +79,11 @@ $stmtWithdrawals = $db->prepare("SELECT * FROM withdrawals WHERE user_id = :user
 $stmtWithdrawals->execute(['user_id' => $user_id]);
 $withdrawals = $stmtWithdrawals->fetchAll();
 
+// 10. Fetch active plan IDs for current user
+$stmtActivePlanIds = $db->prepare("SELECT DISTINCT plan_id FROM investments WHERE user_id = :user_id AND status = 'active'");
+$stmtActivePlanIds->execute(['user_id' => $user_id]);
+$active_plan_ids = $stmtActivePlanIds->fetchAll(PDO::FETCH_COLUMN);
+
 // Construct absolute referral link
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
 $domain = $_SERVER['HTTP_HOST'];
@@ -114,7 +119,7 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
         errDiv.textContent = 'Erreur JS: ' + e.message + ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')';
     });
     </script>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>
@@ -173,12 +178,13 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
                 </div>
             <?php else: ?>
                 <?php foreach ($plans as $i => $p):
-                    $can_afford   = ($user['solde'] >= $p['prix']);
-                    $gain_amount  = round($p['prix'] * $p['pourcentage'] / 100, 2);
-                    $retour_total = $p['prix'] + $gain_amount;
-                    $duree        = $p['duree_valeur'] . ' ' . $p['duree_type'];
-                    $tier         = get_plan_tier_info($i, $p['nom'], $p['niveau'] ?? '');
-                    $img          = !empty($p['image']) ? $p['image'] : 'assets/images/bijou_bronze.png';
+                    $can_afford        = ($user['solde'] >= $p['prix']);
+                    $is_already_active = in_array($p['id'], $active_plan_ids);
+                    $gain_amount       = round($p['prix'] * $p['pourcentage'] / 100, 2);
+                    $retour_total      = $p['prix'] + $gain_amount;
+                    $duree             = $p['duree_valeur'] . ' ' . $p['duree_type'];
+                    $tier              = get_plan_tier_info($i, $p['nom'], $p['niveau'] ?? '');
+                    $img               = !empty($p['image']) ? $p['image'] : 'assets/images/bijou_bronze.png';
                 ?>
                 
                 <!-- LIST MODE CARD (100% Original compact horizontal row) -->
@@ -192,7 +198,7 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
                             </div>
                         <?php endif; ?>
                     </div>
-                    <span class="plan-badge">Actif</span>
+                    <span class="plan-badge"><?php echo $is_already_active ? 'En cours ⏳' : 'Disponible'; ?></span>
                     <div class="pc-body">
                         <div class="pc-name"><?php echo e($p['nom']); ?></div>
                         <div class="pc-meta"><?php echo e($p['duree_valeur']); ?> <?php echo e($p['duree_type']); ?></div>
@@ -208,9 +214,19 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
                             <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>">
                             <input type="hidden" name="plan_id" value="<?php echo e($p['id']); ?>">
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="plan-btn" <?php if (!$can_afford) echo 'disabled title="Solde insuffisant"'; ?>>
-                                <?php echo $can_afford ? 'Investir' : 'Insuffisant'; ?>
-                            </button>
+                            <?php if ($is_already_active): ?>
+                                <button type="button" class="plan-btn" disabled style="opacity: 0.7; cursor: not-allowed; background: rgba(255,179,0,0.2); color: #ffb300; border-color: #ffb300;" title="Investissement déjà en cours sur ce produit">
+                                    En cours ⏳
+                                </button>
+                            <?php elseif ($can_afford): ?>
+                                <button type="submit" class="plan-btn">
+                                    Investir
+                                </button>
+                            <?php else: ?>
+                                <button type="submit" class="plan-btn" disabled title="Solde insuffisant">
+                                    Insuffisant
+                                </button>
+                            <?php endif; ?>
                         </form>
                     </div>
                 </div>
@@ -253,7 +269,12 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
                                 <input type="hidden" name="csrf_token" value="<?php echo e(csrf_token()); ?>">
                                 <input type="hidden" name="plan_id" value="<?php echo e($p['id']); ?>">
                                 <input type="hidden" name="quantity" value="1">
-                                <?php if ($can_afford): ?>
+                                <?php if ($is_already_active): ?>
+                                    <button type="button" class="bc-btn disabled" disabled style="opacity: 0.7; cursor: not-allowed; background: rgba(255,179,0,0.15); color: #ffb300; border-color: #ffb300;" title="Vous avez déjà un investissement actif sur ce produit. Attendez son échéance pour réinvestir.">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        Investissement en cours
+                                    </button>
+                                <?php elseif ($can_afford): ?>
                                     <button type="submit" class="bc-btn">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l3 12 3-12-3-6z"/><path d="M2 9h20"/></svg>
                                         Investir Maintenant
@@ -718,33 +739,18 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
             </button>
         </div>
 
-        <!-- Quantity Selector -->
-        <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border-color); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1rem;">
-            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:0.06em;">Nombre de bijoux</div>
-            <div style="display:flex; align-items:center; gap:0.75rem;">
-                <button id="qtyMinus" type="button" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid var(--border-color);color:var(--text-primary);font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;" aria-label="Diminuer">&minus;</button>
-                <span id="qtyDisplay" style="font-size:2rem;font-weight:800;min-width:40px;text-align:center;color:var(--primary);line-height:1;">1</span>
-                <button id="qtyPlus" type="button" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid var(--border-color);color:var(--text-primary);font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;" aria-label="Augmenter">+</button>
-                <span id="qtyMaxNote" style="font-size:0.78rem;color:var(--text-muted);">max <span id="qtyMaxVal">10</span></span>
-            </div>
-        </div>
-
         <!-- Live Recap -->
         <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; overflow:hidden; margin-bottom:1.2rem;">
             <div style="display:flex; justify-content:space-between; padding:0.65rem 1rem; border-bottom:1px solid var(--border-color);">
-                <span style="color:var(--text-muted); font-size:0.88rem;">Prix unitaire</span>
+                <span style="color:var(--text-muted); font-size:0.88rem;">Produit / Bijou</span>
                 <strong id="recapUnit" style="font-size:0.88rem;">—</strong>
             </div>
             <div style="display:flex; justify-content:space-between; padding:0.65rem 1rem; border-bottom:1px solid var(--border-color);">
-                <span style="color:var(--text-muted); font-size:0.88rem;">Quantité</span>
-                <strong id="recapQty" style="font-size:0.88rem; color:var(--primary);">1</strong>
+                <span style="color:var(--text-muted); font-size:0.88rem;">Montant souscrit</span>
+                <strong id="recapCost" style="font-size:0.88rem; color:var(--primary);">—</strong>
             </div>
             <div style="display:flex; justify-content:space-between; padding:0.65rem 1rem; border-bottom:1px solid var(--border-color);">
-                <span style="color:var(--text-muted); font-size:0.88rem;">Coût total</span>
-                <strong id="recapCost" style="font-size:0.88rem;">—</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between; padding:0.65rem 1rem; border-bottom:1px solid var(--border-color);">
-                <span style="color:var(--text-muted); font-size:0.88rem;">Gains totaux</span>
+                <span style="color:var(--text-muted); font-size:0.88rem;">Gains estimés</span>
                 <strong id="recapGain" style="font-size:0.88rem; color:var(--success);">—</strong>
             </div>
             <div style="display:flex; justify-content:space-between; padding:0.75rem 1rem; background:rgba(245,158,11,0.06);">
@@ -755,7 +761,7 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
 
         <!-- Solde warning -->
         <div id="modalSoldeWarn" style="display:none; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); border-radius:8px; padding:0.6rem 0.9rem; margin-bottom:1rem; font-size:0.85rem; color:#f87171;">
-            Solde insuffisant pour cette quantité.
+            Solde insuffisant pour souscrire à ce produit.
         </div>
 
         <div class="custom-modal-actions">
@@ -796,16 +802,12 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
         try { localStorage.setItem('userThemeChoice', isLight ? 'light' : 'dark'); } catch(e) {}
     }
 
-
-
-
-    /* ── Quantity Modal Logic ─────────────────────────────────── */
+    /* ── Investment Modal Logic ─────────────────────────────────── */
     let formToSubmit = null;
     let currentQty   = 1;
     let planPrix     = 0;
     let planPct      = 0;
     let planSolde    = 0;
-    let qtyMax       = 1;
 
     function fmtMoney(n) {
         return n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + '\u00a0FCFA';
@@ -814,28 +816,19 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
     function updateModalRecap() {
         var warn   = document.getElementById('modalSoldeWarn');
         var btnOk  = document.getElementById('modalConfirmBtn');
-        var totalCost  = planPrix * currentQty;
+        var totalCost  = planPrix;
         var gain       = planPrix * (planPct / 100);
-        var totalGain  = gain * currentQty;
-        var totalRet   = totalCost + totalGain;
+        var totalRet   = totalCost + gain;
 
         document.getElementById('recapUnit').textContent  = fmtMoney(planPrix);
-        document.getElementById('recapQty').textContent   = currentQty;
         document.getElementById('recapCost').textContent  = fmtMoney(totalCost);
-        document.getElementById('recapGain').textContent  = '+' + fmtMoney(totalGain);
+        document.getElementById('recapGain').textContent  = '+' + fmtMoney(gain);
         document.getElementById('recapTotal').textContent = fmtMoney(totalRet);
-        document.getElementById('qtyDisplay').textContent = currentQty;
-        document.getElementById('recapQty').textContent   = currentQty;
 
         var insufficient = totalCost > planSolde;
         if (warn)  warn.style.display  = insufficient ? 'block' : 'none';
         if (btnOk) btnOk.disabled      = insufficient;
         if (btnOk) btnOk.style.opacity = insufficient ? '0.4' : '1';
-    }
-
-    function setQty(n) {
-        currentQty = Math.min(Math.max(1, n), qtyMax);
-        updateModalRecap();
     }
 
     function showInvestmentConfirm(event, formElement) {
@@ -847,11 +840,7 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
         planSolde  = parseFloat(formElement.dataset.solde)  || 0;
         var nom    = formElement.dataset.nom || 'ce plan';
 
-        qtyMax = Math.min(10, Math.max(1, Math.floor(planSolde / planPrix)));
-        currentQty = 1;
-
         document.getElementById('modalPlanName').textContent = nom;
-        document.getElementById('qtyMaxVal').textContent     = qtyMax;
 
         updateModalRecap();
 
@@ -863,23 +852,17 @@ $ref_link = $protocol . $domain . ($dir === '/' ? '' : $dir) . "/register.php?re
         var modal     = document.getElementById('confirmModal');
         var confirmBtn = document.getElementById('modalConfirmBtn');
         var cancelBtn  = document.getElementById('modalCancelBtn');
-        var btnMinus   = document.getElementById('qtyMinus');
-        var btnPlus    = document.getElementById('qtyPlus');
 
         function closeModal() {
             if (modal) modal.classList.remove('show');
             formToSubmit = null;
         }
 
-        if (btnMinus) btnMinus.addEventListener('click', function() { setQty(currentQty - 1); });
-        if (btnPlus)  btnPlus.addEventListener('click',  function() { setQty(currentQty + 1); });
-
         if (confirmBtn) {
             confirmBtn.addEventListener('click', function() {
                 if (!formToSubmit || confirmBtn.disabled) return;
-                /* Write quantity into the form's hidden input */
                 var qInput = formToSubmit.querySelector('[name="quantity"]');
-                if (qInput) qInput.value = currentQty;
+                if (qInput) qInput.value = 1;
                 var targetForm = formToSubmit;
                 closeModal();
                 targetForm.submit();

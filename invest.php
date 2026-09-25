@@ -19,10 +19,8 @@ if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
 
 $user_id = $_SESSION['user_id'];
 $plan_id  = isset($_POST['plan_id'])  ? (int)$_POST['plan_id']  : 0;
-$quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
-
-// Clamp quantity: 1 – 10
-$quantity = max(1, min(10, $quantity));
+// Fixed quantity: Exactly 1 product per investment
+$quantity = 1;
 
 if ($plan_id <= 0) {
     set_flash_message('danger', 'Plan d\'investissement invalide.');
@@ -38,6 +36,15 @@ try {
 
     if (!$plan) {
         set_flash_message('danger', 'Plan d\'investissement introuvable ou inactif.');
+        header('Location: dashboard.php#tab-accueil');
+        exit();
+    }
+
+    // Check if user already has an active investment on this specific product
+    $stmtCheckActive = $db->prepare("SELECT COUNT(*) FROM investments WHERE user_id = :user_id AND plan_id = :plan_id AND status = 'active'");
+    $stmtCheckActive->execute(['user_id' => $user_id, 'plan_id' => $plan_id]);
+    if ((int)$stmtCheckActive->fetchColumn() > 0) {
+        set_flash_message('danger', 'Vous avez déjà un investissement en cours sur le produit "' . $plan['nom'] . '". Attendez son échéance pour pouvoir réinvestir dessus.');
         header('Location: dashboard.php#tab-accueil');
         exit();
     }

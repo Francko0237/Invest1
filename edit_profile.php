@@ -29,7 +29,7 @@ $icon_lock    = '<svg class="svg-icon" viewBox="0 0 24 24" width="16" height="16
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier le Profil - BijouxInvest</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>

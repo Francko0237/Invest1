@@ -35,13 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE telephone = :full
                    OR telephone = :short
                    OR telephone = :raw
-                   OR email     = :raw
+                   OR email     = :email_raw
                 LIMIT 1
             ");
             $stmt->execute([
-                'full'  => $telephone_full,
-                'short' => $telephone_short,
-                'raw'   => $tel_input,
+                'full'      => $telephone_full,
+                'short'     => $telephone_short,
+                'raw'       => $tel_input,
+                'email_raw' => $tel_input,
             ]);
             $user = $stmt->fetch();
 
@@ -72,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - BijouxInvest</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>

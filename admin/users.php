@@ -54,7 +54,12 @@ $stmtUsers = $db->query("SELECT u1.*, u2.nom as parrain_nom
                          FROM users u1 
                          LEFT JOIN users u2 ON u1.parrain_id = u2.id 
                          ORDER BY u1.created_at DESC");
-$users = $stmtUsers->fetchAll();
+// Count pending items for badges
+$stmtPendingDep = $db->query("SELECT COUNT(*) FROM deposits WHERE status = 'pending'");
+$pending_deposits_count = (int)$stmtPendingDep->fetchColumn();
+
+$stmtPendingWd = $db->query("SELECT COUNT(*) FROM withdrawals WHERE status = 'pending'");
+$pending_withdrawals_count = (int)$stmtPendingWd->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -62,7 +67,7 @@ $users = $stmtUsers->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Gestion des Membres</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/style.css'); ?>">
 </head>
 <body class="<?php echo get_theme_class(); ?>">
 <?php render_theme_script(); ?>
@@ -71,9 +76,10 @@ $users = $stmtUsers->fetchAll();
     <a href="dashboard.php" class="nav-brand">BijouxInvest - Admin</a>
     <div class="nav-links">
         <a href="dashboard.php" class="nav-link">Dashboard</a>
+        <a href="deposits.php" class="nav-link">Dépôts <?php if ($pending_deposits_count > 0): ?><span class="badge badge-pending" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;"><?php echo $pending_deposits_count; ?></span><?php endif; ?></a>
         <a href="plans.php" class="nav-link">Gestion Plans</a>
         <a href="users.php" class="nav-link active">Gestion Membres</a>
-        <a href="withdrawals.php" class="nav-link">Retraits</a>
+        <a href="withdrawals.php" class="nav-link">Retraits <?php if ($pending_withdrawals_count > 0): ?><span class="badge badge-pending" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;"><?php echo $pending_withdrawals_count; ?></span><?php endif; ?></a>
         <a href="settings.php" class="nav-link">Configuration</a>
         <a href="../dashboard.php" class="nav-btn-outline">Espace Client</a>
         <a href="../logout.php" class="nav-btn-outline" style="border-color: var(--danger); color: var(--danger);">Déconnexion</a>
