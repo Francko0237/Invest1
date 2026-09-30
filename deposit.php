@@ -254,10 +254,7 @@ $icon_wallet  = '<svg class="svg-icon" viewBox="0 0 24 24" width="20" height="20
                 <input type="text" name="sender_phone" class="form-control" placeholder="Ex: 6XXXXXXXX" required>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Référence / ID de transaction SMS (Optionnel)</label>
-                <input type="text" name="transaction_ref" class="form-control" placeholder="Ex: 254891023 ou TxID...">
-            </div>
+
 
             <div class="form-group">
                 <label class="form-label">Capture d'écran du reçu SMS / Preuve de paiement *</label>
