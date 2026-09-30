@@ -21,7 +21,7 @@ $stmtActiveInv->execute(['user_id' => $user_id]);
 $active_investments_count = (int)$stmtActiveInv->fetchColumn();
 $has_active = ($active_investments_count > 0);
 
-// 4. Calculate maximum withdrawable limit
+// 3. Calculate maximum withdrawable limit
 // a) Sum of payouts from finished investments: Capital + Gains
 $stmtFinished = $db->prepare("SELECT SUM(i.montant * (1 + p.pourcentage / 100)) 
                               FROM investments i 
@@ -30,13 +30,18 @@ $stmtFinished = $db->prepare("SELECT SUM(i.montant * (1 + p.pourcentage / 100))
 $stmtFinished->execute(['user_id' => $user_id]);
 $total_finished_payout = (float)$stmtFinished->fetchColumn();
 
-// b) Sum of already submitted withdrawals (pending or approved)
+// b) Sum of referral bonuses
+$stmtRef = $db->prepare("SELECT SUM(amount) FROM referral_bonus WHERE user_id = :user_id");
+$stmtRef->execute(['user_id' => $user_id]);
+$total_ref_bonus = (float)$stmtRef->fetchColumn();
+
+// c) Sum of already submitted withdrawals (pending or approved)
 $stmtWithdrawn = $db->prepare("SELECT SUM(montant) FROM withdrawals WHERE user_id = :user_id AND status IN ('pending', 'approved')");
 $stmtWithdrawn->execute(['user_id' => $user_id]);
 $total_withdrawn = (float)$stmtWithdrawn->fetchColumn();
 
-// c) Net withdrawable limit based on finished plans
-$solde_retirable_limit = max(0.0, $total_finished_payout - $total_withdrawn);
+// d) Net withdrawable limit based on finished plans and referral bonuses
+$solde_retirable_limit = max(0.0, ($total_finished_payout + $total_ref_bonus) - $total_withdrawn);
 
 // Fetch settings for minimum withdrawal
 $settings = get_all_settings();
@@ -67,21 +72,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Rule 1: Must have invested at least once
-    if ($total_investments_count === 0) {
-        set_flash_message('danger', 'Vous devez effectuer au moins un investissement avant de pouvoir demander un retrait.');
+    // Rule 1: Must have withdrawable funds
+    if ($solde_retirable_limit <= 0) {
+        set_flash_message('danger', 'Vous n\'avez aucun fonds retirable pour le moment. Attendez la fin d\'un investissement pour retirer ses gains.');
         header('Location: withdraw.php');
         exit();
     }
 
-    // Rule 2: Cannot withdraw if active investments are running
-    if ($has_active) {
-        set_flash_message('danger', 'Retrait refusé : vous devez attendre la fin de vos investissements actifs.');
-        header('Location: withdraw.php');
-        exit();
-    }
-
-    // Rule 3: Balance validation
+    // Rule 2: Balance validation
     if ($amount < $retrait_min) {
         set_flash_message('danger', 'Le retrait minimum est de ' . format_money($retrait_min) . '.');
         header('Location: withdraw.php');
@@ -95,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($amount > $solde_retirable_limit) {
-        set_flash_message('danger', 'Seuls les fonds issus d\'investissements terminés peuvent être retirés. Votre limite retirable est de ' . format_money($max_withdrawable) . '.');
+        set_flash_message('danger', 'Seuls les fonds issus d\'investissements terminés ou de bonus peuvent être retirés. Votre limite retirable est de ' . format_money($max_withdrawable) . '.');
         header('Location: withdraw.php');
         exit();
     }
@@ -159,13 +157,9 @@ $icon_clock   = '<svg class="svg-icon" viewBox="0 0 24 24" width="16" height="16
 
     <?php display_flash_messages(); ?>
 
-    <?php if ($total_investments_count === 0): ?>
-        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
-            <strong>Information :</strong> Vous n'avez effectué aucun investissement pour le moment. Souscrivez à un plan avant de pouvoir retirer des fonds.
-        </div>
-    <?php elseif ($has_active): ?>
-        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
-            <strong>Retraits verrouillés :</strong> Vous avez des investissements en cours. Attendez leur échéance pour accéder au retrait.
+    <?php if ($max_withdrawable <= 0): ?>
+        <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+            <strong>Information :</strong> Seuls les fonds issus d'investissements terminés ou de bonus de parrainage peuvent être retirés.
         </div>
     <?php endif; ?>
 
