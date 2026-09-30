@@ -121,14 +121,23 @@ $icon_wallet  = '<svg class="svg-icon" viewBox="0 0 24 24" width="20" height="20
     <title>Effectuer un Dépôt - BijouxInvest</title>
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo filemtime(__DIR__ . '/assets/css/style.css'); ?>">
     <style>
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
         .payment-card {
             border: 2px solid var(--border-color);
             border-radius: var(--border-radius);
-            padding: 1.2rem;
-            margin-bottom: 1.2rem;
+            padding: 1rem;
+            margin-bottom: 0;
             background: var(--bg-card);
             cursor: pointer;
             transition: var(--transition);
+            box-sizing: border-box;
+            width: 100%;
+            overflow: hidden;
         }
         .payment-card.active {
             border-color: var(--primary);
@@ -138,19 +147,28 @@ $icon_wallet  = '<svg class="svg-icon" viewBox="0 0 24 24" width="20" height="20
             background: rgba(0, 242, 254, 0.15);
             color: var(--primary);
             border: 1px dashed var(--primary);
-            padding: 0.35rem 0.75rem;
+            padding: 0.35rem 0.65rem;
             border-radius: var(--border-radius-sm);
             font-family: monospace;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             display: inline-flex;
             align-items: center;
+            justify-content: space-between;
+            max-width: 100%;
+            box-sizing: border-box;
             gap: 0.5rem;
             cursor: pointer;
+            word-break: break-all;
         }
         .copy-badge:hover {
             background: var(--primary);
             color: #000;
+        }
+        @media (max-width: 576px) {
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -184,7 +202,7 @@ $icon_wallet  = '<svg class="svg-icon" viewBox="0 0 24 24" width="20" height="20
         <div style="margin-bottom: 1.5rem;">
             <label class="form-label" style="margin-bottom:0.6rem;">1. Choisissez le moyen de paiement et effectuez le transfert :</label>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="payment-grid">
                 <!-- MTN MoMo -->
                 <div class="payment-card active" id="card-mtn" onclick="selectPayment('mtn_momo')">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
