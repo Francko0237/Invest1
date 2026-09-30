@@ -188,7 +188,10 @@ $icon_wallet  = '<svg class="svg-icon" viewBox="0 0 24 24" width="20" height="20
                 <!-- MTN MoMo -->
                 <div class="payment-card active" id="card-mtn" onclick="selectPayment('mtn_momo')">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-                        <strong style="color:#ffcc00; font-size:1rem;">🟡 MTN Mobile Money</strong>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <img src="assets/images/mtnlogo.png" alt="MTN MoMo" style="height:26px; width:auto; border-radius:4px; object-fit:contain;">
+                            <strong style="color:#ffcc00; font-size:0.95rem;">MTN MoMo</strong>
+                        </div>
                         <input type="radio" name="payment_method_choice" value="mtn_momo" checked style="accent-color: var(--primary);">
                     </div>
                     <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.4rem;"><?php echo e($momo_nom); ?></div>
@@ -201,7 +204,10 @@ $icon_wallet  = '<svg class="svg-icon" viewBox="0 0 24 24" width="20" height="20
                 <!-- Orange Money -->
                 <div class="payment-card" id="card-om" onclick="selectPayment('orange_money')">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-                        <strong style="color:#ff6600; font-size:1rem;">🟠 Orange Money</strong>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <img src="assets/images/orangeOM.png" alt="Orange Money" style="height:26px; width:auto; border-radius:4px; object-fit:contain;">
+                            <strong style="color:#ff6600; font-size:0.95rem;">Orange Money</strong>
+                        </div>
                         <input type="radio" name="payment_method_choice" value="orange_money" style="accent-color: var(--primary);">
                     </div>
                     <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.4rem;"><?php echo e($om_nom); ?></div>
